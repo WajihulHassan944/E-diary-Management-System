@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diary Archives</title>
+     <script src="pdfmake/vfs_fonts.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.2/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.2/vfs_fonts.js"></script>
+   
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<style>
+*{
+	margin:0;
+	padding:0;
+	box-sizing:border-box;
+}
+body{
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	flex-direction:column;
+	width:100%;
+	padding:20px;
+	background:#f8e1e7;
+	color:#dea0ba;
+}
+.container{
+	width:800px;
+	position:relative;
+	margin-top:100px;
+}
+
+h1{
+	padding-top:10px;
+	padding-bottom:10px;
+	width:100%;
+	text-align:center;
+	border:4px solid #dea0ba; 
+}
+button{
+	width:30%;
+	height:100%;
+	padding:5px;
+    border:2px solid #dea0ba;
+	outline:none;
+	background:transparent;
+	color:#dea0ba;
+	font-size:18px;
+	font-weight:600;
+	cursor:pointer;
+}
+</style>
+
+<div class="container">
+    <h1>Diary Archives</h1>
+    <a href="new archive page.html" id="archiveLink" style="	text-decoration:none; width:100%; text-align:center;"><p style="margin-top:20px; margin-bottom:20px; font-weight:700; font-size:23px; color:#dea0ba;">Create a new archive</p></a>
+
+    <!-- JavaScript code -->
+    <table>
+        <thead>
+            <tr>
+                <th>DATE</th>
+                <th>TITLE</th>
+                <th>SAVE / DELETE</th>
+            </tr>
+        </thead>
+        <tbody id="cakesListTableBody"></tbody>
+    </table>
+</div>
+
+<script>
+
+  function getURLParameters(url) {
+    const params = {};
+    const searchParams = new URLSearchParams(new URL(url).search);
+    for (const [key, value] of searchParams) {
+      params[key] = value;
+    }
+    return params;
+  }
+
+
+  function handleArchiveLinkClick(event) {
+    event.preventDefault();
+    const archiveLink = event.target.closest('a').href;
+    const currentParams = getURLParameters(window.location.href);
+
+
+    const url = new URL(archiveLink);
+
+
+    for (const [key, value] of Object.entries(currentParams)) {
+      url.searchParams.append(key, value);
+    }
+
+
+    window.location.href = url.toString();
+  }
+
+
+  document.querySelector('a[href="new archive page.html"]').addEventListener('click', handleArchiveLinkClick);
+</script>
+
+<script>
+    // Function to display the cakes on the website
+    function displayCakes(cakes) {
+        const cakesListTableBody = document.getElementById("cakesListTableBody");
+        cakesListTableBody.innerHTML = "";
+
+        cakes.forEach((cake) => {
+            const row = document.createElement("tr");
+
+            const dateCell = document.createElement("td");
+            dateCell.textContent = new Date(cake.date).toLocaleDateString();
+
+            const titleCell = document.createElement("td");
+            titleCell.textContent = cake.title;
+
+            const actionsCell = document.createElement("td");
+            const savePdfButton = document.createElement("button");
+            savePdfButton.textContent = "Save as PDF";
+            savePdfButton.addEventListener("click", () => {
+                generatePdf(cake);
+            });
+
+            const deleteButton = document.createElement("button");
+deleteButton.textContent = "Delete";
+deleteButton.addEventListener("click", async () => {
+  // Display a confirmation dialog before proceeding with deletion
+  const confirmDelete = confirm("Are you sure you want to delete this data?");
+
+  if (confirmDelete) {
+    try {
+      const response = await fetch(
+        `https://backend-for-experiences.onrender.com/cakes/${cake._id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (response.ok) {
+        alert("Data deleted successfully");
+        // Refresh the cakes list after deletion
+        fetchCakes();
+      } else {
+        throw new Error("Error deleting Data");
+      }
+    } catch (error) {
+      alert("Error deleting data");
+      console.error(error);
+    }
+  } else {
+    // User clicked "Cancel," do nothing
+    return;
+  }
+});
+
+            actionsCell.appendChild(savePdfButton);
+            actionsCell.appendChild(deleteButton);
+
+            row.appendChild(dateCell);
+            row.appendChild(titleCell);
+            row.appendChild(actionsCell);
+
+            cakesListTableBody.appendChild(row);
+        });
+    }
+
+    // Function to fetch the cakes from the backend
+    async function fetchCakes() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const objectId = urlParams.get("objectId");
+
+            const response = await fetch(
+                `https://backend-for-experiences.onrender.com/users/${objectId}/cakes`
+            );
+            if (!response.ok) {
+                throw new Error("Error fetching cakes");
+            }
+            const data = await response.json();
+            displayCakes(data);
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    const generatePdf = (cake) => {
+            const docDefinition = {
+                content: [
+                    { text: `Cake Title: ${cake.title}`, fontSize: 16, bold: true },
+                    { text: `Date: ${new Date(cake.date).toLocaleDateString()}`, fontSize: 14 },
+                    { text: `Description: ${cake.description}`, fontSize: 14 },
+                ],
+            };
+
+            pdfMake.createPdf(docDefinition).download(`${cake.title}.pdf`);
+        };
+        // Fetch all the buttons inside the table
+        const savePdfButtons = document.querySelectorAll("table button");
+
+        // Attach the click event listener to each "Save as PDF" button
+        savePdfButtons.forEach((button) => {
+            if (button.textContent === "Save as PDF") {
+                button.addEventListener("click", () => {
+                    // Find the corresponding cake data
+                    const tableRow = button.closest("tr");
+                    const dateCell = tableRow.querySelector("td:nth-child(1)").textContent;
+                    const titleCell = tableRow.querySelector("td:nth-child(2)").textContent;
+                    const descriptionCell = tableRow.querySelector("td:nth-child(3)").textContent;
+
+                    // Create a cake object with the extracted data
+                    const cake = {
+                        date: new Date(dateCell),
+                        title: titleCell,
+                        description: descriptionCell,
+                    };
+
+                    generatePdf(cake);
+                });
+            }
+        });
+
+        // Call fetchCakes when the page loads to display the cakes
+        fetchCakes();
+    </script>
+
+
+
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>

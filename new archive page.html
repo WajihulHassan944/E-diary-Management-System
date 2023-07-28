@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diary Archives</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+<style>
+*{
+	margin:0;
+	padding:0;
+	box-sizing:border-box;
+}
+body{
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	flex-direction:column;
+	width:100%;
+	height:100vh;
+	padding:20px;
+	background:#f8e1e7;
+	color:#dea0ba;
+}
+a{
+	text-decoration:none;
+}
+.container{
+	width:800px;
+	position:relative;
+}
+form input{
+	background:transparent;
+	padding:10px;
+	border:4px solid #dea0ba;
+	outline:none;
+	font-size:20px;
+	color:#dea0ba;
+	box-shadow:0 5px 10px rgba(0,0,0,0.1);
+	height:50px;
+}
+form input::placeholder{
+	color:#dea0ba;
+	font-weight:600;
+}
+
+form textarea::placeholder{
+	color:#dea0ba;
+	font-weight:600;
+}
+
+form textarea{
+	width:100%;
+	background:transparent;
+	padding:10px;
+	border:4px solid #dea0ba;
+	outline:none;
+	font-size:20px;
+	color:#dea0ba;
+	box-shadow:0 5px 10px rgba(0,0,0,0.1);
+	height:300px;
+    resize: none;
+}
+form div{
+	width:100%;
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	margin-bottom:40px;
+}
+.container button{
+	background:transparent;
+	padding:10px;
+	border:4px solid #dea0ba;
+	outline:none;
+	margin-top:20px;
+	margin-bottom:10px;
+	font-size:20px;
+	width:200px;
+	color:#dea0ba;
+	font-weight:600;
+	transition:0.2s ease;
+	cursor:pointer;
+	box-shadow:0 5px 10px rgba(0,0,0,0.1);
+	position:absolute;
+	right:0;
+	bottom:-90px;
+}
+button:hover{
+	background:#fff;
+}
+</style>
+
+<div class="container">
+
+<form id="cakeForm">
+  <div><input type="text" id="title" placeholder="Insert Title" required style="width:480px; font-style:italic; text-align:center;">
+  <input type="date" id="date" required style="width:280px;"></div>
+  <textarea id="description" placeholder="Start Typing.." required></textarea>
+  <button type="submit">Save to Archives</button>
+</form>
+
+<script>
+  document.getElementById("cakeForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+  
+    const title = document.getElementById("title").value;
+    const date = document.getElementById("date").value;
+    const description = document.getElementById("description").value;
+    
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const objectId = urlParams.get('objectId');
+  
+      const response = await fetch(`https://backend-for-experiences.onrender.com/users/${objectId}/cakes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, date, description }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Error submitting data');
+      }
+  
+    if (response.ok) {
+        alert('Data submitted successfully');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const objectId = urlParams.get('objectId');
+        window.location.href = `dashboard page.html?loginSuccessful=true&objectId=${objectId}`;
+      }
+     } catch (error) {
+      alert('Error submitting data');
+      console.error('Error:', error);
+    }
+  });
+</script>
+
+
+
+</div>
+
+
+
+
+
+
+</body>
+
+</html>
