@@ -194,7 +194,7 @@ deleteButton.addEventListener("click", async () => {
     const generatePdf = (cake) => {
             const docDefinition = {
                 content: [
-                    { text: `Cake Title: ${cake.title}`, fontSize: 16, bold: true },
+                    { text: `Title: ${cake.title}`, fontSize: 16, bold: true },
                     { text: `Date: ${new Date(cake.date).toLocaleDateString()}`, fontSize: 14 },
                     { text: `Description: ${cake.description}`, fontSize: 14 },
                 ],
